@@ -280,8 +280,9 @@
             mat4.identity(mMatrix);
             mat4.identity(vMatrix);
             
-            // Desenhando o Quadrado
-            vec3.set (translation, 3.0, 0.0, 0.0); 
+            // Desenhando o Cubo
+            var translation = vec3.create();
+            vec3.set (translation,3.0, 0.0, 0.0); 
             mat4.translate(mMatrix, mMatrix, [0.0, 0.0, -5.0]);
             //Rotação
             mat4.rotate(mMatrix, mMatrix, degToRad(xRot), [1, 0, 0]);
