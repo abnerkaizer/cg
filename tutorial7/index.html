@@ -3,7 +3,55 @@
 <head>
     <meta charset="utf-8"/>
     <title>Tutorial 7</title>
-    
+    <script id="shader-vs" type="x-shader/x-vertex">
+    	attribute vec3 aVertexPosition;
+      	attribute vec3 aVertexNormal;
+    	attribute vec2 aTextureCoord;
+      
+    	uniform mat4 uMMatrix;
+    	uniform mat4 uVMatrix;
+    	uniform mat4 uPMatrix;
+		uniform mat3 uNMatrix;
+
+		uniform vec3 uCorAmbiente;
+		uniform vec3 uDirecaoLuz;
+		uniform vec3 uCorDifusa;
+      
+		uniform bool uUsarLuz;     
+
+    	varying vec2 vTextureCoord;
+      
+		varying vec3 vPotenciaLuz;
+
+      	void main(void)
+      	{
+
+	      	gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+	      	vTextureCoord = aTextureCoord;
+	      	
+	      	if(!uUsarLuz){
+	      		vPotenciaLuz = vec3(1.0,1.0,1.0);	  
+	      	}else{
+	      		vec3 normalTransformado=uNMatrix * aVertexNormal;
+	      		float potenciaLuz = max(dot(normalTransformado, uDirecaoLuz),0.0);
+	      		vPotenciaLuz = uCorAmbiente + uCorDifusa * potenciaLuz;
+	      	}
+      	}
+    </script>
+    <script id="shader-fs" type="x-shader/x-fragment">
+    	precision mediump float;
+      	varying vec2 vTextureCoord;
+		varying vec3 vPotenciaLuz;
+      
+      	uniform sampler2D uSampler;
+      
+      	void main(void)
+      	{
+			vec4 corTextura = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+			//gl_FragColor = corTextura;
+			gl_FragColor = vec4(corTextura.rgb * vPotenciaLuz, corTextura.a);
+      	}
+    </script>
     <script type="text/javascript" src="js/gl-matrix-2.4.0.js"></script>
     <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="js/webgl-utils.js"></script>
@@ -508,55 +556,6 @@
 			height:500px;
 	    }
 	</style>
-	    <script id="shader-vs" type="x-shader/x-vertex">
-    	attribute vec3 aVertexPosition;
-      	attribute vec3 aVertexNormal;
-    	attribute vec2 aTextureCoord;
-      
-    	uniform mat4 uMMatrix;
-    	uniform mat4 uVMatrix;
-    	uniform mat4 uPMatrix;
-		uniform mat3 uNMatrix;
-
-		uniform vec3 uCorAmbiente;
-		uniform vec3 uDirecaoLuz;
-		uniform vec3 uCorDifusa;
-      
-		uniform bool uUsarLuz;     
-
-    	varying vec2 vTextureCoord;
-      
-		varying vec3 vPotenciaLuz;
-
-      	void main(void)
-      	{
-
-	      	gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
-	      	vTextureCoord = aTextureCoord;
-	      	
-	      	if(!uUsarLuz){
-	      		vPotenciaLuz = vec3(1.0,1.0,1.0);	  
-	      	}else{
-	      		vec3 normalTransformado=uNMatrix * aVertexNormal;
-	      		float potenciaLuz = max(dot(normalTransformado, uDirecaoLuz),0.0);
-	      		vPotenciaLuz = uCorAmbiente + uCorDifusa * potenciaLuz;
-	      	}
-      	}
-    </script>
-    <script id="shader-fs" type="x-shader/x-fragment">
-    	precision mediump float;
-      	varying vec2 vTextureCoord;
-		varying vec3 vPotenciaLuz;
-      
-      	uniform sampler2D uSampler;
-      
-      	void main(void)
-      	{
-			vec4 corTextura = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-			//gl_FragColor = corTextura;
-			gl_FragColor = vec4(corTextura.rgb * vPotenciaLuz, corTextura.a);
-      	}
-    </script>
     
 </head>
   
