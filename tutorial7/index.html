@@ -1,0 +1,598 @@
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+    <title>Tutorial 7</title>
+    
+    <script type="text/javascript" src="js/gl-matrix-2.4.0.js"></script>
+    <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="js/webgl-utils.js"></script>
+    
+    <script type="text/javascript">
+    
+		var gl;
+		var shaderProgram;
+		var cuboVertexPositionBuffer;
+		var cuboVertexTextureCoordBuffer;
+		var cuboVertexIndexBuffer;
+
+		var cuboVertexNormalBuffer;
+
+		var mMatrix = mat4.create();
+		var mMatrixPilha = [];
+		var pMatrix = mat4.create();
+		var vMatrix = mat4.create();
+
+		var xRot = 0;
+		var xVelo = 0;
+		var yRot = 0;
+		var yVelo = 0;
+
+		var z = -5.0;
+
+		var ultimo = 0;
+
+		var caixaTextura;
+		var teclasPressionadas = {};
+
+		var luzCheckBox;
+		var vermelhoInput;
+		var verdeInput;
+		var azulInput;
+    
+		// Iniciar o ambiente quando a página for carregada
+		$(function()
+		{
+			iniciaWebGL();
+		});
+      
+		// Iniciar o ambiente
+		function iniciaWebGL()
+		{
+			var canvas = $('#licao01-canvas')[0];
+			iniciarGL(canvas); // Definir como um canvas 3D
+			iniciarShaders();  // Obter e processar os Shaders
+			iniciarBuffers();  // Enviar o triângulo e quadrado na GPU
+			iniciarAmbiente(); // Definir background e cor do objeto
+			iniciarTextura();
+
+			document.onkeydown = eventoTeclaPress;
+			document.onkeyup = eventoTeclaSolta;
+			tick();
+		}
+      
+      
+		function tick()
+		{
+			requestAnimFrame(tick);
+			tratarTeclado();
+			desenharCena();
+			animar();
+		}
+
+
+		function eventoTeclaPress(evento) {
+			teclasPressionadas[evento.keyCode] = true;
+			if(
+				(evento.keyCode >=60 && evento.keyCode <= 90) ||
+				(evento.keyCode >=32 && evento.keyCode <= 40)
+			)
+			return false;
+		}
+
+		function eventoTeclaSolta(evento) {
+			teclasPressionadas[evento.keyCode] = false;
+			return false;
+		}
+
+		function tratarTeclado() {
+			if (teclasPressionadas[33]) {
+			  // Page Up
+			  z -= 0.05;
+			}
+			if (teclasPressionadas[34]) {
+			  // Page Down
+			  z += 0.05;
+			}
+			if (teclasPressionadas[37]) {
+			  // Esquerda
+			  yVelo -= 1;
+			}
+			if (teclasPressionadas[39]) {
+			  // Direita
+			  yVelo += 1;
+			}
+			if (teclasPressionadas[38]) {
+			  // Cima
+			  xVelo -= 1;
+			}
+			if (teclasPressionadas[40]) {
+			  // Baixo
+			  xVelo += 1;
+			}
+		}
+
+		function iniciarTextura()
+		{
+			var imagemCaixa = new Image();
+			imagemCaixa.crossOrigin = "anonymous"; // ask for CORS permission
+			caixaTextura = gl.createTexture();
+			caixaTextura.image = imagemCaixa;
+		
+			imagemCaixa.onload = function()
+			{
+				tratarTextura(caixaTextura);
+			}
+		
+			imagemCaixa.src = "caixa.gif";
+			shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+		}
+
+		function tratarTextura(textura)
+		{
+			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+			gl.bindTexture(gl.TEXTURE_2D, textura);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textura.image);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+
+			gl.bindTexture(gl.TEXTURE_2D, null);
+		}
+      
+		function iniciarGL(canvas)
+		{
+			try
+			{
+				gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+				gl.viewportWidth = canvas.width;
+				gl.viewportHeight = canvas.height;
+			}
+			catch(e)
+			{
+				if(!gl)
+				{
+					alert("Não pode inicializar WebGL, desculpe");
+				}
+			}
+		}
+      
+      	function iniciarShaders() {
+	          var vertexShader = getShader(gl, "#shader-vs");
+	          var fragmentShader = getShader(gl, "#shader-fs");
+
+	          shaderProgram = gl.createProgram();
+	          gl.attachShader(shaderProgram, vertexShader);
+	          gl.attachShader(shaderProgram, fragmentShader);
+	          gl.linkProgram(shaderProgram);
+
+	          if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+	              alert("Não pode inicializar shaders");
+	          }
+
+			gl.useProgram(shaderProgram);
+
+			shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+			gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+			shaderProgram.vertexTextureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+			gl.enableVertexAttribArray(shaderProgram.vertexTextureCoordAttribute);
+
+			shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+			gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+
+			shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+			shaderProgram.vMatrixUniform = gl.getUniformLocation(shaderProgram, "uVMatrix");
+			shaderProgram.mMatrixUniform = gl.getUniformLocation(shaderProgram, "uMMatrix");
+			shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
+			shaderProgram.usarLuzUniform = gl.getUniformLocation(shaderProgram, "uUsarLuz");
+			shaderProgram.corAmbienteUniform = gl.getUniformLocation(shaderProgram, "uCorAmbiente");
+			shaderProgram.corDifusaUniform = gl.getUniformLocation(shaderProgram, "uCorDifusa");
+			shaderProgram.direcaoLuzUniform = gl.getUniformLocation(shaderProgram, "uDirecaoLuz");
+	
+
+	    }     
+
+		function getShader(gl, id) {
+			var shaderScript = $(id)[0];
+		  	if (!shaderScript) {
+		    	return null;
+			}
+
+			var str = "";
+			var k = shaderScript.firstChild;
+			while (k) {
+			    if (k.nodeType == 3)
+			        str += k.textContent;
+			    k = k.nextSibling;
+			}
+
+			var shader;
+			if (shaderScript.type == "x-shader/x-fragment") {
+			    shader = gl.createShader(gl.FRAGMENT_SHADER);
+			} else if (shaderScript.type == "x-shader/x-vertex") {
+			    shader = gl.createShader(gl.VERTEX_SHADER);
+			} else {
+			    return null;
+			}
+
+			gl.shaderSource(shader, str);
+			gl.compileShader(shader);
+
+			if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			    alert(gl.getShaderInfoLog(shader));
+			    return null;
+			}
+
+			return shader;
+		}
+      
+	    function iniciarBuffers()
+	    {
+			cuboVertexPositionBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, cuboVertexPositionBuffer);
+			vertices = [
+			  // Front face
+			  -1.0, -1.0,  1.0,
+			  1.0, -1.0,  1.0,
+			  1.0,  1.0,  1.0,
+			  -1.0,  1.0,  1.0,
+
+			  // Back face
+			  -1.0, -1.0, -1.0,
+			  -1.0,  1.0, -1.0,
+			  1.0,  1.0, -1.0,
+			  1.0, -1.0, -1.0,
+
+			  // Top face
+			  -1.0,  1.0, -1.0,
+			  -1.0,  1.0,  1.0,
+			  1.0,  1.0,  1.0,
+			  1.0,  1.0, -1.0,
+
+			  // Bottom face
+			  -1.0, -1.0, -1.0,
+			  1.0, -1.0, -1.0,
+			  1.0, -1.0,  1.0,
+			  -1.0, -1.0,  1.0,
+
+			  // Right face
+			  1.0, -1.0, -1.0,
+			  1.0,  1.0, -1.0,
+			  1.0,  1.0,  1.0,
+			  1.0, -1.0,  1.0,
+
+			  // Left face
+			  -1.0, -1.0, -1.0,
+			  -1.0, -1.0,  1.0,
+			  -1.0,  1.0,  1.0,
+			  -1.0,  1.0, -1.0
+			];
+		
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+			cuboVertexPositionBuffer.itemSize = 3;
+			cuboVertexPositionBuffer.numItems = 4;
+			
+			cuboVertexTextureCoordBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, cuboVertexTextureCoordBuffer);
+			var coordTextura = [
+			  // Frente
+			  0.0, 0.0,
+			  1.0, 0.0,
+			  1.0, 1.0,
+			  0.0, 1.0,
+
+			  // Trás
+			  1.0, 0.0,
+			  1.0, 1.0,
+			  0.0, 1.0,
+			  0.0, 0.0,
+
+			  // Topo
+			  0.0, 1.0,
+			  0.0, 0.0,
+			  1.0, 0.0,
+			  1.0, 1.0,
+
+			  // Base
+			  1.0, 1.0,
+			  0.0, 1.0,
+			  0.0, 0.0,
+			  1.0, 0.0,
+
+			  // Direita
+			  1.0, 0.0,
+			  1.0, 1.0,
+			  0.0, 1.0,
+			  0.0, 0.0,
+
+			  // Esquerda
+			  0.0, 0.0,
+			  1.0, 0.0,
+			  1.0, 1.0,
+			  0.0, 1.0,
+			];
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coordTextura), gl.STATIC_DRAW);
+			cuboVertexTextureCoordBuffer.itemSize = 2;
+			cuboVertexTextureCoordBuffer.numItems = 24;
+		
+			cuboVertexIndexBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cuboVertexIndexBuffer);
+			var indices = [
+			  0, 1, 2,      0, 2, 3,    // Frente
+			  4, 5, 6,      4, 6, 7,    // Trás
+			  8, 9, 10,     8, 10, 11,  // Topo
+			  12, 13, 14,   12, 14, 15, // Base
+			  16, 17, 18,   16, 18, 19, // Direita
+			  20, 21, 22,   20, 22, 23  // Esquerda
+			]
+
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+			cuboVertexIndexBuffer.itemSize = 1;
+			cuboVertexIndexBuffer.numItems = 36;
+
+
+			cuboVertexNormalBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, cuboVertexNormalBuffer);
+			var vertexNormals = [
+			  // Frente
+			  0.0,  0.0,  1.0,
+			  0.0,  0.0,  1.0,
+			  0.0,  0.0,  1.0,
+			  0.0,  0.0,  1.0,
+
+			  // Trás
+			  0.0,  0.0, -1.0,
+			  0.0,  0.0, -1.0,
+			  0.0,  0.0, -1.0,
+			  0.0,  0.0, -1.0,
+
+			  // Topo
+			  0.0,  1.0,  0.0,
+			  0.0,  1.0,  0.0,
+			  0.0,  1.0,  0.0,
+			  0.0,  1.0,  0.0,
+
+			  // Base
+			  0.0, -1.0,  0.0,
+			  0.0, -1.0,  0.0,
+			  0.0, -1.0,  0.0,
+			  0.0, -1.0,  0.0,
+
+			  // Direita
+			  1.0,  0.0,  0.0,
+			  1.0,  0.0,  0.0,
+			  1.0,  0.0,  0.0,
+			  1.0,  0.0,  0.0,
+
+			  // Esquerda
+			  -1.0,  0.0,  0.0,
+			  -1.0,  0.0,  0.0,
+			  -1.0,  0.0,  0.0,
+			  -1.0,  0.0,  0.0,
+			];
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexNormals),gl.STATIC_DRAW);
+			cuboVertexNormalBuffer.itemSize = 3;
+			cuboVertexNormalBuffer.numItems = 24;
+	    }
+	      
+		function iniciarAmbiente()
+		{
+			gl.clearColor(0.0, 0.0, 0.5, 1.0);
+			gl.enable(gl.DEPTH_TEST);
+			luzCheckBox = document.getElementById("luz");
+			vermelhoInput = document.getElementById("vermelho");
+			verdeInput = document.getElementById("verde");
+			azulInput = document.getElementById("azul");
+		}
+	      
+	    function desenharCena()
+	    {
+			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+			mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
+			mat4.identity(mMatrix);
+			mat4.identity(vMatrix);
+
+            var translation = vec3.create();
+            var rotacao = vec3.create();
+
+            // Desenhando Cubo
+            vec3.set(translation, 0.0, 0.0, z);
+            mat4.translate(mMatrix, mMatrix, translation);
+
+            vec3.set(rotacao, 1, 0, 0);
+			mat4.rotate(mMatrix,mMatrix, degToRad(xRot), rotacao);
+            vec3.set(rotacao, 0, 1, 0);
+			mat4.rotate(mMatrix,mMatrix, degToRad(yRot), rotacao);
+			
+			gl.bindBuffer(gl.ARRAY_BUFFER, cuboVertexPositionBuffer);
+			gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cuboVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+			gl.bindBuffer(gl.ARRAY_BUFFER, cuboVertexTextureCoordBuffer);
+			gl.vertexAttribPointer(shaderProgram.vertexTextureCoordAttribute, cuboVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+			
+			gl.bindBuffer(gl.ARRAY_BUFFER, cuboVertexNormalBuffer);
+			gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, cuboVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+			
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, caixaTextura);
+			gl.uniform1i(shaderProgram.samplerUniform, 0);
+			
+			var luz = luzCheckBox.checked;
+			gl.uniform1i(shaderProgram.usarLuzUniform, luz);
+			
+			if(luz)
+			{
+			  gl.uniform3f(
+			  	shaderProgram.corAmbienteUniform,
+			  	parseFloat(document.getElementById("ambienteR").value),
+			  	parseFloat(document.getElementById("ambienteG").value),
+		    	parseFloat(document.getElementById("ambienteB").value)
+			  );
+			  
+			  var direcaoLuz = [
+			    parseFloat(document.getElementById("direcaoLuzX").value),
+			    parseFloat(document.getElementById("direcaoLuzY").value),
+			    parseFloat(document.getElementById("direcaoLuzZ").value)
+			  ];
+
+			  var direcaoNormalizada = vec3.create();
+			  vec3.normalize(direcaoLuz, direcaoNormalizada);
+			  vec3.scale(direcaoNormalizada, -1);
+			  gl.uniform3fv(shaderProgram.direcaoLuzUniform, direcaoNormalizada);
+			  
+			  gl.uniform3f(
+			    shaderProgram.corDifusaUniform,
+			    parseFloat(document.getElementById("difusaR").value),
+			    parseFloat(document.getElementById("difusaG").value),
+			    parseFloat(document.getElementById("difusaB").value)	  
+			  );
+
+			  var matrizNormal = mat3.create();
+			  mat3.normalFromMat4(mMatrix, matrizNormal);
+			  mat3.transpose(matrizNormal, matrizNormal);
+			  gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, matrizNormal);
+			}
+			
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cuboVertexIndexBuffer);
+			setMatrixUniforms();
+			gl.drawElements(gl.TRIANGLES, cuboVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT,0);
+
+		}
+	      
+	    function setMatrixUniforms()
+	    {
+			gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+			gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, vMatrix);
+			gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, mMatrix);
+		}
+	      
+	    // o 'var ultimo = 0' está no topo (todos as vars globais estão juntas)
+	    function animar()
+	    {
+			var agora = new Date().getTime();
+			if(ultimo != 0)
+			{
+				var diferenca = agora-ultimo;
+				xRot  += ((xVelo*diferenca)/1000.0) % 360.0;
+				yRot  += ((yVelo*diferenca)/1000.0) % 360.0;
+
+			}
+			ultimo = agora;
+	    }
+	      
+        function mPushMatrix() {
+            var copy = mat4.create(mMatrix);
+            //var copy = mat4.create();
+            //mat4.set(copy, mMatrix);
+            mMatrixPilha.push(copy);
+        }
+
+        function mPopMatrix() {
+            if (mMatrixPilha.length == 0) {
+                throw "inválido popMatrix!";
+            }
+            mMatrix = mMatrixPilha.pop();
+        }
+	      
+	    function degToRad(graus)
+	    {
+			return graus * Math.PI / 180;
+	    }
+	</script>
+	    
+    <!--Aparência da página (canvas, background...)-->
+    <style>
+    	canvas
+      	{
+			border:none;
+			width:500px;
+			height:500px;
+	    }
+	</style>
+	    <script id="shader-vs" type="x-shader/x-vertex">
+    	attribute vec3 aVertexPosition;
+      	attribute vec3 aVertexNormal;
+    	attribute vec2 aTextureCoord;
+      
+    	uniform mat4 uMMatrix;
+    	uniform mat4 uVMatrix;
+    	uniform mat4 uPMatrix;
+		uniform mat3 uNMatrix;
+
+		uniform vec3 uCorAmbiente;
+		uniform vec3 uDirecaoLuz;
+		uniform vec3 uCorDifusa;
+      
+		uniform bool uUsarLuz;     
+
+    	varying vec2 vTextureCoord;
+      
+		varying vec3 vPotenciaLuz;
+
+      	void main(void)
+      	{
+
+	      	gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+	      	vTextureCoord = aTextureCoord;
+	      	
+	      	if(!uUsarLuz){
+	      		vPotenciaLuz = vec3(1.0,1.0,1.0);	  
+	      	}else{
+	      		vec3 normalTransformado=uNMatrix * aVertexNormal;
+	      		float potenciaLuz = max(dot(normalTransformado, uDirecaoLuz),0.0);
+	      		vPotenciaLuz = uCorAmbiente + uCorDifusa * potenciaLuz;
+	      	}
+      	}
+    </script>
+    <script id="shader-fs" type="x-shader/x-fragment">
+    	precision mediump float;
+      	varying vec2 vTextureCoord;
+		varying vec3 vPotenciaLuz;
+      
+      	uniform sampler2D uSampler;
+      
+      	void main(void)
+      	{
+			vec4 corTextura = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+			//gl_FragColor = corTextura;
+			gl_FragColor = vec4(corTextura.rgb * vPotenciaLuz, corTextura.a);
+      	}
+    </script>
+    
+</head>
+  
+<body>
+    <canvas id="licao01-canvas" width="500" height="500"></canvas>
+
+    <br />
+    <input type="checkbox" id="luz" value="luz" checked /><label for="luz">Luz</label><br/>
+    (Use o teclado para girar o cubo e <code>Page Up</code>/<code>Page Down</code> para ampliar ou reduzir)
+
+    <br/>
+    <h2>Luz Difusa:</h2>
+
+    <table style="border: 0; padding: 10px;">
+        <tr>
+            <td><b>Direction:</b>
+            <td>X: <input type="text" id="direcaoLuzX" value="-0.25" />
+            <td>Y: <input type="text" id="direcaoLuzY" value="-0.25" />
+            <td>Z: <input type="text" id="direcaoLuzZ" value="-1.0" />
+        </tr>
+        <tr>
+            <td><b>Colour:</b>
+            <td>R: <input type="text" id="difusaR" value="0.8" />
+            <td>G: <input type="text" id="difusaG" value="0.8" />
+            <td>B: <input type="text" id="difusaB" value="0.8" />
+        </tr>
+    </table>
+
+    <h2>Luz Ambiente:</h2>
+    <table style="border: 0; padding: 10px;">
+        <tr>
+            <td><b>Colour:</b>
+            <td>R: <input type="text" id="ambienteR" value="0.2" />
+            <td>G: <input type="text" id="ambienteG" value="0.2" />
+            <td>B: <input type="text" id="ambienteB" value="0.2" />
+        </tr>
+    </table>
+</body>
+</html>
