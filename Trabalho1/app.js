@@ -10,8 +10,6 @@ var xVelo = 0;
 var yRot = 0;
 var yVelo = 0;
 
-var z = -12.0;
-
 var filtro = 0;
 
 //Piramide
@@ -299,7 +297,7 @@ function desenharCena(){
     
     // Chapeu
     var translation = vec3.create();
-    vec3.set (translation, 0.0, 4.0, z); 
+    vec3.set (translation, 0.0, 4.0, -12); 
     mat4.translate(mMatrix, mMatrix, translation);
     //Rotação
     mPushMatrix();
@@ -631,14 +629,6 @@ function eventoTeclaSolta(evento) {
   teclasPressionadas[evento.keyCode] = false;
 }
 function tratarTeclado() {
-  if (teclasPressionadas[33]) {
-    // Page Up
-    z -= 0.05;
-  }
-  if (teclasPressionadas[34]) {
-    // Page Down
-    z += 0.05;
-  }
   if (teclasPressionadas[37]) {
     // Esquerda
     yVelo -= 1;
