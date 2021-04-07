@@ -3,6 +3,16 @@ var mMatrix = mat4.create();
 var mMatrixPilha = []; 
 var vMatrix = mat4.create();    
 var pMatrix = mat4.create();
+//Teclado
+var xRot = 0;
+var xVelo = 0;
+
+var yRot = 0;
+var yVelo = 0;
+
+var z = -12.0;
+
+var filtro = 0;
 
 //Piramide
 var piramideVertexPositionBuffer;
@@ -10,10 +20,8 @@ var piramideVertexColorBuffer;
 
 //Cabeça
 var squareVertexPositionBuffer;
-var headVertexColorBuffer;
-
-//Pele
 var skinVertexColorBuffer;
+
 //Dorso
 var dorsoVertexColorBuffer;
 
@@ -42,6 +50,8 @@ function iniciaWebGL(){
     iniciarBuffers();                                  /* Enviar o triângulo e quadrado na GPU */
     iniciarAmbiente();                                 /* Definir background e cor do objeto */
     tick();                                            /* Usar os itens anteriores e desenhar */
+    document.onkeydown = eventoTeclaPress;
+  	document.onkeyup = eventoTeclaSolta;
 }
 
 function iniciarGL(canvas){
@@ -196,17 +206,6 @@ function iniciarBuffers(){
     squareVertexPositionBuffer.itemSize = 3;
     squareVertexPositionBuffer.numItems = 4;
 
-    headVertexColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, headVertexColorBuffer);
-    cores = []
-    for (var i=0; i < 4; i++) {
-        cores = cores.concat([1.0, 0.827, 0.709, 1.0]);
-    }
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cores), gl.STATIC_DRAW);
-    headVertexColorBuffer.itemSize = 4;
-    headVertexColorBuffer.numItems = 4;
-    
-    //Cor da pele
     skinVertexColorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, skinVertexColorBuffer);
     cores = []
@@ -216,6 +215,7 @@ function iniciarBuffers(){
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cores), gl.STATIC_DRAW);
     skinVertexColorBuffer.itemSize = 4;
     skinVertexColorBuffer.numItems = 4;
+
     //Cor do dorso
     dorsoVertexColorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, dorsoVertexColorBuffer);
@@ -248,6 +248,26 @@ function iniciarBuffers(){
     legVertexPositionBuffer.itemSize = 3;
     legVertexPositionBuffer.numItems = 4;
 
+   	//Olhos
+   	eyeVertexPositionBuffer = gl.createBuffer();
+   	gl.bindBuffer(gl.ARRAY_BUFFER,eyeVertexPositionBuffer);
+   	vertices = [1.0,1.0,0.0, -1.0,1.0,0.0, 1.0,-1.0,0.0, -1.0,-1.0,0.0];
+   	/* STATIC_DRAW significa que não iremos jogar
+    os dados da GPU para a CPU, apenas da CPU para 
+    a GPU.                                      */
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    eyeVertexPositionBuffer.itemSize = 3;
+    eyeVertexPositionBuffer.numItems = 4;
+
+    eyeVertexColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, eyeVertexColorBuffer);
+    cores = []
+    for (var i=0; i < 4; i++) {
+        cores = cores.concat([1.0, 1.0, 1.0, 1.0]);
+    }
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cores), gl.STATIC_DRAW);
+    eyeVertexColorBuffer.itemSize = 4;
+	eyeVertexColorBuffer.numItems = 4;
 }	
 
 function iniciarAmbiente(){
@@ -279,11 +299,12 @@ function desenharCena(){
     
     // Chapeu
     var translation = vec3.create();
-    vec3.set (translation, 0.0, 4.0, -12.0); 
+    vec3.set (translation, 0.0, 4.0, z); 
     mat4.translate(mMatrix, mMatrix, translation);
     //Rotação
     mPushMatrix();
-    mat4.rotate(mMatrix, mMatrix, degToRad(rPiramide), [0, 1, 0]);
+    mat4.rotate(mMatrix, mMatrix, degToRad(xRot), [1, 0, 0]);
+	mat4.rotate(mMatrix, mMatrix, degToRad(yRot), [0, 1, 0]);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, piramideVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, piramideVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -301,9 +322,8 @@ function desenharCena(){
     mPushMatrix();
     gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, headVertexColorBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, headVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    
+    gl.bindBuffer(gl.ARRAY_BUFFER, skinVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, skinVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
     
     setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
@@ -550,7 +570,8 @@ function animar()
     if(ultimo != 0)
     {
       var diferenca = agora - ultimo;
-        rPiramide  += ((90*diferenca)/1000.0) % 360.0;
+        xRot  += ((xVelo*diferenca)/1000.0) % 360.0;
+		yRot  += ((yVelo*diferenca)/1000.0) % 360.0;
     }
     ultimo = agora;
 }
@@ -562,6 +583,45 @@ function setMatrixUniforms(){
 function tick()
 {
   requestAnimFrame(tick);
+  tratarTeclado();
   desenharCena();
   animar();
+}
+var teclasPressionadas = {};
+
+function eventoTeclaPress(evento) {
+  teclasPressionadas[evento.keyCode] = true;
+
+  if (String.fromCharCode(evento.keyCode) == "F")
+    filtro = (filtro+1) % 3;
+}
+
+function eventoTeclaSolta(evento) {
+  teclasPressionadas[evento.keyCode] = false;
+}
+function tratarTeclado() {
+  if (teclasPressionadas[33]) {
+    // Page Up
+    z -= 0.05;
+  }
+  if (teclasPressionadas[34]) {
+    // Page Down
+    z += 0.05;
+  }
+  if (teclasPressionadas[37]) {
+    // Esquerda
+    yVelo -= 1;
+  }
+  if (teclasPressionadas[39]) {
+    // Direita
+    yVelo += 1;
+  }
+  if (teclasPressionadas[38]) {
+    // Cima
+    xVelo -= 1;
+  }
+  if (teclasPressionadas[40]) {
+    // Baixo
+    xVelo += 1;
+  }
 }
