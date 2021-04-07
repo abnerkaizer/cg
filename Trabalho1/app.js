@@ -9,9 +9,11 @@ var piramideVertexPositionBuffer;
 var piramideVertexColorBuffer;
 
 //Cabeça
-var squareVertecPositionBuffer;
-var squareVertecColorBuffer;
+var squareVertexPositionBuffer;
+var headVertexColorBuffer;
 
+//Pele
+var skinVertexColorBuffer;
 //Dorso
 var dorsoVertexColorBuffer;
 
@@ -20,6 +22,9 @@ var armVertexPositionBuffer;
 
 //Pernas
 var legVertexPositionBuffer;
+//Olhos
+var eyeVertexPositionBuffer;
+var eyeVertexColorBuffer;
 
 //Angulos de rotação
 var rPiramide = 0;
@@ -28,7 +33,6 @@ var rPiramide = 0;
 $(function(){
     iniciaWebGL();
 });
-
         
 function iniciaWebGL(){
     var canvas = $('#canvas-webgl')[0];
@@ -192,16 +196,26 @@ function iniciarBuffers(){
     squareVertexPositionBuffer.itemSize = 3;
     squareVertexPositionBuffer.numItems = 4;
 
-    squareVertexColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexColorBuffer);
+    headVertexColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, headVertexColorBuffer);
     cores = []
     for (var i=0; i < 4; i++) {
         cores = cores.concat([1.0, 0.827, 0.709, 1.0]);
     }
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cores), gl.STATIC_DRAW);
-    squareVertexColorBuffer.itemSize = 4;
-    squareVertexColorBuffer.numItems = 4;
-
+    headVertexColorBuffer.itemSize = 4;
+    headVertexColorBuffer.numItems = 4;
+    
+    //Cor da pele
+    skinVertexColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, skinVertexColorBuffer);
+    cores = []
+    for (var i=0; i < 4; i++) {
+        cores = cores.concat([1.0, 0.827, 0.709, 1.0]);
+    }
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cores), gl.STATIC_DRAW);
+    skinVertexColorBuffer.itemSize = 4;
+    skinVertexColorBuffer.numItems = 4;
     //Cor do dorso
     dorsoVertexColorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, dorsoVertexColorBuffer);
@@ -233,6 +247,7 @@ function iniciarBuffers(){
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     legVertexPositionBuffer.itemSize = 3;
     legVertexPositionBuffer.numItems = 4;
+
 }	
 
 function iniciarAmbiente(){
@@ -279,14 +294,16 @@ function desenharCena(){
     gl.drawArrays(gl.TRIANGLES, 0, piramideVertexPositionBuffer.numItems);
 
     mPopMatrix();
+    
     //Cabeça
     vec3.set (translation, 0.0, -2.1, 0.0); 
     mat4.translate(mMatrix, mMatrix, translation);
     mPushMatrix();
     gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexColorBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, squareVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, headVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, headVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
     
     setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
@@ -315,6 +332,7 @@ function desenharCena(){
     setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
     mPopMatrix();
+    
     //Braço direito
     vec3.set (translation, -3.5, 2.4, -15.0); 
 
@@ -352,6 +370,7 @@ function desenharCena(){
     setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, armVertexPositionBuffer.numItems);
     mPopMatrix();
+    
     //Braço esquerdo
     vec3.set (translation, 11.0, 0.0, 0.0); 
 
@@ -389,29 +408,139 @@ function desenharCena(){
     setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, armVertexPositionBuffer.numItems);
     mPopMatrix();
+    
     //Mão direita
     vec3.set (translation, -16.0, 0.0, 2.5); 
     mat4.translate(mMatrix, mMatrix, translation);
     mPushMatrix();
     gl.bindBuffer(gl.ARRAY_BUFFER, legVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, armVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexColorBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, squareVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, skinVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, skinVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
     
     setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
     mPopMatrix();
+    
     //Mão esquerda
     vec3.set (translation, 16.0, 0.0, 0.0); 
     mat4.translate(mMatrix, mMatrix, translation);
     mPushMatrix();
     gl.bindBuffer(gl.ARRAY_BUFFER, legVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, armVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexColorBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, squareVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, skinVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, skinVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
     
     setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
+    mPopMatrix();
+    
+    //Perna Direita
+
+    vec3.set (translation, -8.83, -7.0, 0.0); 
+
+    mat4.translate(mMatrix, mMatrix, translation);
+    mPushMatrix();
+    gl.bindBuffer(gl.ARRAY_BUFFER, legVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, legVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, dorsoVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, dorsoVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+    setMatrixUniforms();
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, legVertexPositionBuffer.numItems);
+    mPopMatrix();
+    vec3.set (translation, 0.0, -2.0, 0.0); 
+
+    mat4.translate(mMatrix, mMatrix, translation);
+    mPushMatrix();
+    gl.bindBuffer(gl.ARRAY_BUFFER, legVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, legVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, dorsoVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, dorsoVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+    setMatrixUniforms();
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, legVertexPositionBuffer.numItems);
+    mPopMatrix();
+    vec3.set (translation, 0.0, -1.0, 0.0); 
+
+    mat4.translate(mMatrix, mMatrix, translation);
+    mPushMatrix();
+    gl.bindBuffer(gl.ARRAY_BUFFER, legVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, legVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, dorsoVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, dorsoVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+    setMatrixUniforms();
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, legVertexPositionBuffer.numItems);
+    mPopMatrix();
+
+    //Perna esquerda
+
+    vec3.set (translation, 2.7, 3.0, -0.5); 
+
+    mat4.translate(mMatrix, mMatrix, translation);
+    mPushMatrix();
+    gl.bindBuffer(gl.ARRAY_BUFFER, legVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, legVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, dorsoVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, dorsoVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+    setMatrixUniforms();
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, legVertexPositionBuffer.numItems);
+    mPopMatrix();
+    vec3.set (translation, 0.0, -2.0, 0.0); 
+
+    mat4.translate(mMatrix, mMatrix, translation);
+    mPushMatrix();
+    gl.bindBuffer(gl.ARRAY_BUFFER, legVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, legVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, dorsoVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, dorsoVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+    setMatrixUniforms();
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, legVertexPositionBuffer.numItems);
+    mPopMatrix();
+    vec3.set (translation, 0.0, -1.2, 0.0); 
+
+    mat4.translate(mMatrix, mMatrix, translation);
+    mPushMatrix();
+    gl.bindBuffer(gl.ARRAY_BUFFER, legVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, legVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, dorsoVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, dorsoVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+    setMatrixUniforms();
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, legVertexPositionBuffer.numItems);
+    mPopMatrix();
+
+    //Pé direito
+
+	vec3.set (translation, -2.65, -0.8, 2.5); 
+
+    mat4.translate(mMatrix, mMatrix, translation);
+    mPushMatrix();
+    gl.bindBuffer(gl.ARRAY_BUFFER, legVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, legVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, skinVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, skinVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+    setMatrixUniforms();
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, legVertexPositionBuffer.numItems);
+    mPopMatrix();
+
+    //Pé esquerdo
+
+    vec3.set (translation, 2.63, 0.0, 0.0); 
+
+    mat4.translate(mMatrix, mMatrix, translation);
+    mPushMatrix();
+    gl.bindBuffer(gl.ARRAY_BUFFER, legVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, legVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, skinVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, skinVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+    setMatrixUniforms();
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, legVertexPositionBuffer.numItems);
     mPopMatrix();
 }
 var ultimo = 0;
