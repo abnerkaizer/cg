@@ -276,7 +276,7 @@ function desenharCena(){
     setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
     mPopMatrix();
-    vec3.set (translation, 0.0, -0.7, 0.03); 
+    vec3.set (translation, 0.0, -0.2, 0.03); 
     mat4.translate(mMatrix, mMatrix, translation);
     mPushMatrix();
     gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
@@ -287,7 +287,7 @@ function desenharCena(){
     setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
     mPopMatrix();
-    
+
 }
 var ultimo = 0;
 function animar()
