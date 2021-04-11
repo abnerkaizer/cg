@@ -1,0 +1,3 @@
+"Twisted Torus" (https://skfb.ly/BGxD) by Microsoft is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
+"The little man" (https://skfb.ly/ArxQ) by JuanG3D is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/) .
