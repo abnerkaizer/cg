@@ -9,9 +9,10 @@
   <body>
     
     <a-scene background="color: blue" physics="gravity: 0">
-        <a-camera look-controls progressive-controls position="-0.54 1.6 29.86">
-            <a-sphere dynamic-body grabbable color="orange" position="0.17 0.43 -4.8" radius="0.5"></a-sphere>
-        </a-camera>
+        <a-camera look-controls wasd-controls progressive-controls position="-0.54 1.6 29.86"></a-camera>
+
+        <a-sphere dynamic-body grabbable color="orange" position="-1 4 25" radius="0.5"></a-sphere>
+
         <a-text value="Grab the sphere and move it through the arcs," position="-2 5 26" color="black" line-height="5">
             <a-text position="0 -0.3 0"value="without touching the arcs." color="black" line-height="10"></a-text>
         </a-text>
