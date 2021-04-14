@@ -10,10 +10,11 @@
     <!-- Gravidade setada em zero para fazer a esfera flutuar.-->
     <a-scene background="color: blue" physics="gravity: 0">
         <!--Camera-->
-        <a-camera id="camera" wasd-controls progressive-controls position="-0.54 1.6 29.86"></a-camera>
+        <a-camera id="camera" wasd-controls progressive-controls position="-0.54 1.6 29.86">
+            <!--Objeto à ser controlado-->
+            <a-sphere id="sphere" dynamic-body grabbable color="orange" position="0 1 -2" radius="0.5"></a-sphere>
+        </a-camera>
         
-        <!--Objeto à ser controlado-->
-        <a-sphere id="sphere" dynamic-body grabbable color="orange" position="-1 4 25" radius="0.5"></a-sphere>
 
         <!--Comando do que o jogador deve fazer-->
         <a-text value="Grab the sphere and move it through the arcs," position="-2 6 26" color="black" line-height="5">
