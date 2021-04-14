@@ -7,29 +7,131 @@
     <script src="https://unpkg.com/aframe-event-set-component@4.0.0/dist/aframe-event-set-component.min.js"></script>
   </head>
   <body>
-    
+    <!-- Gravidade setada em zero para fazer a esfera flutuar.-->
     <a-scene background="color: blue" physics="gravity: 0">
-        <a-camera look-controls wasd-controls progressive-controls position="-0.54 1.6 29.86"></a-camera>
+        <!--Camera-->
+        <a-camera id="camera" wasd-controls progressive-controls position="-0.54 1.6 29.86"></a-camera>
+        
+        <!--Objeto à ser controlado-->
+        <a-sphere id="sphere" dynamic-body grabbable color="orange" position="-1 4 25" radius="0.5"></a-sphere>
 
-        <a-sphere dynamic-body grabbable color="orange" position="-1 4 25" radius="0.5"></a-sphere>
-
-        <a-text value="Grab the sphere and move it through the arcs," position="-2 5 26" color="black" line-height="5">
-            <a-text position="0 -0.3 0"value="without touching the arcs." color="black" line-height="10"></a-text>
+        <!--Comando do que o jogador deve fazer-->
+        <a-text value="Grab the sphere and move it through the arcs," position="-2 6 26" color="black" line-height="5">
+            <a-text position="0 -0.3 0"value="without touching the them." color="black" line-height="10"></a-text>
+            <a-text position="0 -0.6 0"value="And return to here." color="black" line-height="10"></a-text>
         </a-text>
-        <a-sphere position="0.9 0.1 4.5" radius="0">
-            <a-box static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
-            <a-box static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
-            <a-box static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
-            <a-box static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+
+        <!--Arcos a serem visitados-->
+        <a-sphere id="arc1" position="3 -1.85 6.3" radius="0.01" opacity="0">
+            <a-box static-body event-set__respos="_event: collide; position:0 -10 0" position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box static-body event-set__respos="_event: collide; position:0 -10 0" position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box static-body event-set__respos="_event: collide; position:0 -10 0" position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box static-body event-set__respos="_event: collide; position:0 -10 0" position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
         </a-sphere>
 
-        <a-sphere position="0 0 0" radius="0">
-            <a-box static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
-            <a-box static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
-            <a-box static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
-            <a-box static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        <a-sphere id="arc2" position="3 -0.4 -6.8" radius="0.01" opacity="0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
         </a-sphere>
+
+        <a-sphere id="arc3" position="4 2 -17" radius="0.01" opacity="0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+
+        <a-sphere id="arc4" position="9 1 -25" radius="0.01" opacity="0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc5" position="15 2 -33" radius="0.01" opacity="0" rotation="0 290 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc6" position="24.7 3 -36" radius="0.01" opacity="0" rotation="0 70 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc7" position="30 6.6 -33.2" radius="0.01" opacity="0" rotation="0 60 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc8" position="35.9 6 -23" radius="0.01" opacity="0" rotation="0 50 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc9" position="37.9 3.65 -10.6" radius="0.01" opacity="0" rotation="0 40 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc10" position="37.3 -0.15 3" radius="0.01" opacity="0" rotation="0 0 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc11" position="37.3 -0.15 19" radius="0.01" opacity="0" rotation="0 0 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc12" position="37.3 -0.15 39.7" radius="0.01" opacity="0" rotation="0 0 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc13" position="39 -1 53.73" radius="0.01" opacity="0" rotation="0 330 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc14" position="24.84 -2.78 58.85" radius="0.01" opacity="0" rotation="0 70 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc15" position="14.1 -1.95 53" radius="0.01" opacity="0" rotation="0 45 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc16" position="7.3 -2.6 46.7" radius="0.01" opacity="0" rotation="0 20 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+        <a-sphere id="arc17" position="2.25 -4.57 30.79" radius="0.01" opacity="0" rotation="0 0 0">
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position="-5 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" 2 10 0" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 13.5 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+            <a-box event-set__respos="_event: collide; position:0 -10 0" static-body position=" -1.5 7 0" rotation="0 0 90" color="red" depth="1" height="5" width="1"></a-box>
+        </a-sphere>
+
+        <!-- Céu-->
         <a-sky color="blue"></a-sky>
+        
+        <!--Chão-->
         <a-plane color="gray" static-body position="0 0 0" height="1000" width="1000" rotation="-90 0 0"></a-plane>
     </a-scene>
   </body>
