@@ -60,3 +60,6 @@ a:hover{
     color:rgb(226, 217, 84);
     transition: 0.3s all;
 }
+#icon{
+    font-size: 36px;
+}
