@@ -68,7 +68,7 @@
     }
     .menu__box {
         display: flex;
-        position: absolute;
+        position: fixed;
         flex-direction: column;
         right: -100%;
         width: 150px;
