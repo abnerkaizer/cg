@@ -74,6 +74,7 @@
         width: 150px;
         height: 100%;
         margin: 0px;
+        padding: 80 0;
         background-color: #0f0f0f;
         transition-duration: .25s;
     }
